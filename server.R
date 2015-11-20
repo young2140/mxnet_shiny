@@ -10,6 +10,11 @@ synsets <<- readLines("Inception/synset.txt")
 
 mean.img <<- as.array(mx.nd.load("Inception/mean_224.nd")[["mean_img"]])
 
+if (!file.exists("Inception/synset.txt")) {
+  download.file("http://webdocs.cs.ualberta.ca/~bx3/data/Inception.zip", destfile="Inception.zip")
+  unzip("Inception.zip")
+}
+
 preproc.image <- function(im, mean.image) {
   # crop the image
   shape <- dim(im)
