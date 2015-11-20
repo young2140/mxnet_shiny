@@ -1,49 +1,29 @@
-require('shiny')
-require('rARPACK')
-require('jpeg')
-require('png')
+require(mxnet)
+require(imager)
+require(shiny)
+require(jpeg)
+require(png)
 
 shinyUI(pageWithSidebar(
-
-  headerPanel(title = 'ImgSVD - Image Compression via SVD',
-              windowTitle = 'ImgSVD - Image Compression via SVD'),
-
+  headerPanel(title = 'Image Classification using MXNetR', 
+              windowTitle = 'Image Classification using MXNetR'),
+  
   sidebarPanel(
     includeCSS('boot.css'),
-    includeHTML('header.html'),
-
-    helpText("Step 1. Upload Image"),
-    fileInput('file1', 'Upload a PNG / JPEG File:'),
-
-    tags$hr(),
-
-    helpText("Step 2. Selecting k Singular Values"),
-    sliderInput("intk", "Slide to choose k:", min = 1, max = 100, value = 5)
-
+    helpText("Upload Image"),
+    fileInput('file1', 'Upload a PNG / JPEG File:')
   ),
-
+  
   mainPanel(
-
-    tabsetPanel(
-
-      tabPanel("Let's do this!",
-               h3("Original Image"),
-               tags$hr(),
-               imageOutput("originImage", height = "auto"),
-               tags$hr(),
-               h3("Compressed Image"),
-               tags$hr(),
-               imageOutput("svdImage", height = "auto")
-      ),
-
-      tabPanel("Cite this app",
-               includeHTML('cite.html')
-      )
-
-    ),
-
-    includeHTML('footer.html')
-
+    tabPanel(
+      "Let's do this!",
+      h3("Image"),
+      tags$hr(),
+      imageOutput("originImage", height = "auto"),
+      tags$hr(),
+      h3("What is in it?"),
+      tags$hr(),
+      verbatimTextOutput("res")
+    )
   )
-
 ))

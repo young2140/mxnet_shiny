@@ -1,108 +1,69 @@
-require('shiny')
-require('rARPACK')
-require('jpeg')
-require('png')
+require(mxnet)
+require(imager)
+require(shiny)
+require(jpeg)
+require(png)
 
-# Factorize m with k-th order truncated SVD
-factorize = function(m, k) {
-    
-    r = rARPACK::svds(m[, , 1], k)
-    g = rARPACK::svds(m[, , 2], k)
-    b = rARPACK::svds(m[, , 3], k)
-    
-    return(list(r = r, g = g, b = b))
-    
-}
+model <<- mx.model.load("Inception/Inception_BN", iteration = 39)
 
-# Recover m using k-th order truncated SVD
-recoverimg = function(lst, k) {
-    # Recover a single channel
-    recover0 = function(fac, k) {
-        
-        dmat = diag(k)
-        diag(dmat) = fac$d[1:k]
-        m = fac$u[, 1:k] %*% dmat %*% t(fac$v[, 1:k])
-        m[m < 0] = 0
-        m[m > 1] = 1
-        
-        return(m)
-        
-    }
-    
-    r = recover0(lst$r, k)
-    g = recover0(lst$g, k)
-    b = recover0(lst$b, k)
-    return(array(c(r, g, b), c(nrow(r), ncol(r), 3)))
+synsets <<- readLines("Inception/synset.txt")
+
+mean.img <<- as.array(mx.nd.load("Inception/mean_224.nd")[["mean_img"]])
+
+preproc.image <- function(im, mean.image) {
+  # crop the image
+  shape <- dim(im)
+  short.edge <- min(shape[1:2])
+  yy <- floor((shape[1] - short.edge) / 2) + 1
+  yend <- yy + short.edge - 1
+  xx <- floor((shape[2] - short.edge) / 2) + 1
+  xend <- xx + short.edge - 1
+  croped <- im[yy:yend, xx:xend,,]
+  # resize to 224 x 224, needed by input of the model.
+  resized <- resize(croped, 224, 224)
+  # convert to array (x, y, channel)
+  arr <- as.array(resized)
+  dim(arr) = c(224, 224, 3)
+  # substract the mean
+  normed <- arr - mean.img
+  # Reshape to format needed by mxnet (width, height, channel, num)
+  dim(normed) <- c(224, 224, 3, 1)
+  return(normed)
 }
 
 shinyServer(function(input, output) {
+  output$originImage = renderImage({
+    list(src = if (is.null(input$file1))
+      'cthd.jpg'
+      else
+        input$file1$datapath,
+      title = "Original Image")
     
-    lst = list()
+  }, deleteFile = FALSE)
+  
+  output$svdImage = renderImage({
+    result2 = doRecovery()
     
-    runSVD = reactive({
-        
-        imgtype = input$file1$type
-        
-        if (is.null(imgtype)) {
-            inFile1 = 'cthd.jpg'
-            imgtype = 'image/jpeg'
-        } else {
-            if (!(imgtype %in% c('image/jpeg', 'image/png'))) {
-                stop("Only JPEG and PNG images are supported!")
-            }
-            inFile1 = input$file1$datapath
-        }
-        
-        isJPEG  = imgtype == 'image/jpeg'
-        
-        rawimg = (if (isJPEG) jpeg::readJPEG else png::readPNG)(inFile1)
-        
-        lst = factorize(rawimg, 100)
-        lst
-    })
-    
-    doRecovery = reactive({
-        
-        imgtype = input$file1$type
-        
-        if (is.null(imgtype)) {
-            imgtype = 'image/jpeg'
-        } else {
-            if (!(imgtype %in% c('image/jpeg', 'image/png'))) {
-                stop("Only JPEG and PNG images are supported!")
-            }
-        }
-        isJPEG  = imgtype == 'image/jpeg'
-        neig = as.integer(input$intk)
-        m    = recoverimg(lst, neig)
-        
-        outfile2 = tempfile(fileext = ifelse(isJPEG, '.jpg', '.png'))
-        (if (isJPEG) jpeg::writeJPEG else png::writePNG)(image = m, target = outfile2, 1)
-        
-        list('out' = outfile2,
-             'k' = neig
-        )
-    })
-    
-    output$originImage = renderImage({
-        
-        lst <<- runSVD()
-        list(
-            src = if (is.null(input$file1)) 'cthd.jpg' else input$file1$datapath,
-            title = "Original Image"
-        )
-        
-    }, deleteFile = FALSE)
-    
-    output$svdImage = renderImage({
-        
-        #lst = writeSVD()
-        result2 = doRecovery()
-        
-        list(src = result2$out,
-             title = paste("Compressed Image with k = ", as.character(result2$k))
-        )
-        
-    })
-    
+    list(src = result2$out,
+         title = paste("Compressed Image with k = ", as.character(result2$k)))
+  })
+  
+  output$res <- renderText({
+    src = if (is.null(input$file1)) 'cthd.jpg' else input$file1$datapath
+    im <- load.image(src)
+    normed <- preproc.image(im, mean.img)
+    prob <- predict(model, X = normed)
+    max.idx <- order(prob[,1], decreasing = TRUE)[1:5]
+    result <- synsets[max.idx]
+    res_str <- ""
+    for (i in 1:5) {
+      tmp <- strsplit(result[i], " ")[[1]]
+      for (j in 2:length(tmp)) {
+        res_str <- paste0(res_str, tmp[j])
+      }
+      res_str <- paste0(res_str, "\n")
+    }
+    res_str
+  })
+  
 })
