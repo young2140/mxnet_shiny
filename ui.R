@@ -9,7 +9,7 @@ shinyUI(pageWithSidebar(
               windowTitle = 'Image Classification using MXNetR'),
   
   sidebarPanel(includeCSS('boot.css'),
-               tabsetPanel(
+               tabsetPanel(id = "tabs",
                  tabPanel("Upload Image",
                           fileInput('file1', 'Upload a PNG / JPEG File:')),
                  tabPanel(

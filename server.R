@@ -47,7 +47,6 @@ shinyServer(function(input, output) {
       tmp_file <- tempfile()
       download.file(input$url, destfile = tmp_file)
       tmp_file
-      input$goButton = 0
     }
   })
   
@@ -56,7 +55,7 @@ shinyServer(function(input, output) {
     list(
       src = if (is.null(input$file1) && input$goButton == 0)
         'cthd.jpg'
-      else if (input$goButton != 0) {
+      else if (input$tabs == "Use the URL" && input$goButton != 0) {
         if (is.null(ntext())) {
           'cthd.jpg'
         } else {
@@ -71,15 +70,15 @@ shinyServer(function(input, output) {
   output$res <- renderText({
 
     src = if (is.null(input$file1) && input$goButton == 0)
-      'cthd.jpg'
-    else if (input$goButton != 0) {
-      if (is.null(ntext())) {
         'cthd.jpg'
-      } else {
-        ntext() 
-      }
-    } else
-      input$file1$datapath
+      else if (input$tabs == "Use the URL") {
+        if (is.null(ntext())) {
+          'cthd.jpg'
+        } else {
+          ntext() 
+        }
+      } else
+        input$file1$datapath
     
     im <- load.image(src)
     normed <- preproc.image(im, mean.img)
