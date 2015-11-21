@@ -51,34 +51,54 @@ shinyServer(function(input, output) {
   })
   
   output$originImage = renderImage({
-    
-    list(
-      src = if (is.null(input$file1) && input$goButton == 0)
-        'cthd.jpg'
-      else if (input$tabs == "Use the URL" && input$goButton != 0) {
-        if (is.null(ntext())) {
+    list(src = if (input$tabs == "Upload Image") {
+      if (is.null(input$file1)) {
+        if (input$goButton == 0 || is.null(ntext())) {
           'cthd.jpg'
         } else {
-          ntext() 
+          ntext()
         }
-      } else
-        input$file1$datapath,
-      title = "Original Image"
-    )
+      } else {
+        input$file1$datapath
+      }
+    } else {
+      if (input$goButton == 0 || is.null(ntext())) {
+        if (is.null(input$file1)) {
+          'cthd.jpg'
+        } else {
+          input$file1$datapath
+        }
+      } else {
+        ntext()
+      }
+    },
+    title = "Original Image")
   }, deleteFile = FALSE)
   
   output$res <- renderText({
-
-    src = if (is.null(input$file1) && input$goButton == 0)
-        'cthd.jpg'
-      else if (input$tabs == "Use the URL") {
-        if (is.null(ntext())) {
+    src = if (input$tabs == "Upload Image") {
+      if (is.null(input$file1)) {
+        if (input$goButton == 0 || is.null(ntext())) {
           'cthd.jpg'
         } else {
-          ntext() 
+          ntext()
         }
-      } else
+      } else {
         input$file1$datapath
+      }
+    } else {
+      if (input$goButton == 0 || is.null(ntext())) {
+        if (is.null(input$file1)) {
+          'cthd.jpg'
+        } else {
+          input$file1$datapath
+        }
+      } else {
+        ntext()
+      }
+    }
+    
+    
     
     im <- load.image(src)
     normed <- preproc.image(im, mean.img)
