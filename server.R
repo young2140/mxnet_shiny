@@ -40,6 +40,7 @@ preproc.image <- function(im, mean.image) {
 
 shinyServer(function(input, output) {
   ntext <- eventReactive(input$goButton, {
+    print(input$url)
     if (input$url == "http://") {
       NULL
     } else {
@@ -50,23 +51,33 @@ shinyServer(function(input, output) {
   })
   
   output$originImage = renderImage({
+    
     list(
-      src = if (is.null(input$file1) && is.null(ntext()))
+      src = if (is.null(input$file1) && input$goButton == 0)
         'cthd.jpg'
-      else if (!is.null(ntext()))
-        ntext()
-      else
+      else if (input$goButton != 0) {
+        if (is.null(ntext())) {
+          'cthd.jpg'
+        } else {
+          ntext() 
+        }
+      } else
         input$file1$datapath,
       title = "Original Image"
     )
   }, deleteFile = FALSE)
   
   output$res <- renderText({
-    src = if (is.null(input$file1) && is.null(ntext()))
+
+    src = if (is.null(input$file1) && input$goButton == 0)
       'cthd.jpg'
-    else if (!is.null(ntext()))
-      ntext()
-    else
+    else if (input$goButton != 0) {
+      if (is.null(ntext())) {
+        'cthd.jpg'
+      } else {
+        ntext() 
+      }
+    } else
       input$file1$datapath
     
     im <- load.image(src)
