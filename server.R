@@ -4,16 +4,16 @@ require(shiny)
 require(jpeg)
 require(png)
 
+if (!file.exists("Inception/synset.txt")) {
+  download.file("http://webdocs.cs.ualberta.ca/~bx3/data/Inception.zip", destfile="Inception.zip")
+  unzip("Inception.zip")
+}
+
 model <<- mx.model.load("Inception/Inception_BN", iteration = 39)
 
 synsets <<- readLines("Inception/synset.txt")
 
 mean.img <<- as.array(mx.nd.load("Inception/mean_224.nd")[["mean_img"]])
-
-if (!file.exists("Inception/synset.txt")) {
-  download.file("http://webdocs.cs.ualberta.ca/~bx3/data/Inception.zip", destfile="Inception.zip")
-  unzip("Inception.zip")
-}
 
 preproc.image <- function(im, mean.image) {
   # crop the image
