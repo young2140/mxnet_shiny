@@ -47,6 +47,7 @@ shinyServer(function(input, output) {
       tmp_file <- tempfile()
       download.file(input$url, destfile = tmp_file)
       tmp_file
+      input$goButton = 0
     }
   })
   
