@@ -4,11 +4,18 @@ require(shiny)
 require(jpeg)
 require(png)
 
+if (!file.exists("Inception/synset.txt")) {
+  download.file("http://webdocs.cs.ualberta.ca/~bx3/data/Inception.zip", destfile =
+                  "Inception.zip")
+  unzip("Inception.zip")
+}
+
 model <<- mx.model.load("Inception/Inception_BN", iteration = 39)
 
 synsets <<- readLines("Inception/synset.txt")
 
-mean.img <<- as.array(mx.nd.load("Inception/mean_224.nd")[["mean_img"]])
+mean.img <<-
+  as.array(mx.nd.load("Inception/mean_224.nd")[["mean_img"]])
 
 preproc.image <- function(im, mean.image) {
   # crop the image
@@ -32,24 +39,65 @@ preproc.image <- function(im, mean.image) {
 }
 
 shinyServer(function(input, output) {
-  output$originImage = renderImage({
-    list(src = if (is.null(input$file1))
-      'cthd.jpg'
-      else
-        input$file1$datapath,
-      title = "Original Image")
-    
-  }, deleteFile = FALSE)
-  
-  output$svdImage = renderImage({
-    result2 = doRecovery()
-    
-    list(src = result2$out,
-         title = paste("Compressed Image with k = ", as.character(result2$k)))
+  ntext <- eventReactive(input$goButton, {
+    print(input$url)
+    if (input$url == "http://") {
+      NULL
+    } else {
+      tmp_file <- tempfile()
+      download.file(input$url, destfile = tmp_file)
+      tmp_file
+    }
   })
   
+  output$originImage = renderImage({
+    list(src = if (input$tabs == "Upload Image") {
+      if (is.null(input$file1)) {
+        if (input$goButton == 0 || is.null(ntext())) {
+          'cthd.jpg'
+        } else {
+          ntext()
+        }
+      } else {
+        input$file1$datapath
+      }
+    } else {
+      if (input$goButton == 0 || is.null(ntext())) {
+        if (is.null(input$file1)) {
+          'cthd.jpg'
+        } else {
+          input$file1$datapath
+        }
+      } else {
+        ntext()
+      }
+    },
+    title = "Original Image")
+  }, deleteFile = FALSE)
+  
   output$res <- renderText({
-    src = if (is.null(input$file1)) 'cthd.jpg' else input$file1$datapath
+    src = if (input$tabs == "Upload Image") {
+      if (is.null(input$file1)) {
+        if (input$goButton == 0 || is.null(ntext())) {
+          'cthd.jpg'
+        } else {
+          ntext()
+        }
+      } else {
+        input$file1$datapath
+      }
+    } else {
+      if (input$goButton == 0 || is.null(ntext())) {
+        if (is.null(input$file1)) {
+          'cthd.jpg'
+        } else {
+          input$file1$datapath
+        }
+      } else {
+        ntext()
+      }
+    }
+    
     im <- load.image(src)
     normed <- preproc.image(im, mean.img)
     prob <- predict(model, X = normed)
