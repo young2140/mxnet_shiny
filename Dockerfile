@@ -1,6 +1,6 @@
 FROM r-base:latest
 
-MAINTAINER Winston Chang "winston@rstudio.com"
+MAINTAINER Qiang Kou "qkou@umail.iu.edu"
 
 RUN apt-get update && apt-get install -y -t unstable \
     sudo \
