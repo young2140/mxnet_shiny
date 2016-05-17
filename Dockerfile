@@ -21,7 +21,7 @@ RUN wget --no-verbose https://s3.amazonaws.com/rstudio-shiny-server-os-build/ubu
     wget --no-verbose "https://s3.amazonaws.com/rstudio-shiny-server-os-build/ubuntu-12.04/x86_64/shiny-server-$VERSION-amd64.deb" -O ss-latest.deb && \
     gdebi -n ss-latest.deb && \
     rm -f version.txt ss-latest.deb && \
-    R -e "install.packages(c('shiny', 'rmarkdown', 'devtools' 'roxygen2'), repos='https://cran.rstudio.com/')"
+    R -e "install.packages(c('shiny', 'rmarkdown', 'devtools', 'roxygen2'), repos='https://cran.rstudio.com/')"
 
 # compile mxnet
 RUN git clone --recursive https://github.com/dmlc/mxnet/ && cd mxnet && \
