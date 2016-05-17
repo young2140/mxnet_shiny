@@ -36,7 +36,7 @@ RUN git clone --recursive https://github.com/dmlc/mxnet/ && cd mxnet && \
     R CMD INSTALL mxnet_*.tar.gz
 
 RUN git clone https://github.com/thirdwing/mxnet_shiny.git && \
-    cp -R mxnet_shiny/* /srv/shiny-server/
+    cp -r mxnet_shiny/ /srv/shiny-server/
 
 EXPOSE 3838
 
