@@ -28,15 +28,11 @@ RUN git clone --recursive https://github.com/dmlc/mxnet/ && cd mxnet && \
     cp make/config.mk . && \
     echo "USE_BLAS=openblas" >>config.mk && \
     echo "USE_OPENCV = 0" >>config.mk && \
-    make
-
-# install R package dependencies
-RUN cd R-package && \
+    make -j2 && \
+    cd R-package && \
     Rscript -e "library(devtools); library(methods); options(repos=c(CRAN='https://cran.rstudio.com')); install_deps(dependencies = TRUE)" && \
-    cd ..
-
-# install R package
-RUN make rpkg && \
+    cd .. && \
+    make rpkg && \
     R CMD INSTALL mxnet_*.tar.gz
 
 RUN git clone https://github.com/thirdwing/mxnet_shiny.git && \
