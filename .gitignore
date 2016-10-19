@@ -1,4 +1,8 @@
 .Rhistory
 Inception.zip
+inception-bn.tar.gz
 Inception/
+Inception-BN-0126.params
+Inception-BN-symbol.json
+synset.txt
 .DS_Store

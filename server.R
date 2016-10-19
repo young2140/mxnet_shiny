@@ -4,18 +4,14 @@ require(shiny)
 require(jpeg)
 require(png)
 
-if (!file.exists("Inception/synset.txt")) {
-  download.file("http://webdocs.cs.ualberta.ca/~bx3/data/Inception.zip", destfile =
-                  "Inception.zip")
-  unzip("Inception.zip")
+if (!file.exists("synset.txt")) {
+  download.file("http://data.dmlc.ml/mxnet/models/imagenet/inception-bn.tar.gz", destfile = "inception-bn.tar.gz")
+  untar("Inception.zip")
 }
 
-model <<- mx.model.load("Inception/Inception_BN", iteration = 39)
+model <<- mx.model.load("./Inception-BN", iteration = 126)
 
-synsets <<- readLines("Inception/synset.txt")
-
-mean.img <<-
-  as.array(mx.nd.load("Inception/mean_224.nd")[["mean_img"]])
+synsets <<- readLines("synset.txt")
 
 preproc.image <- function(im, mean.image) {
   # crop the image
@@ -30,7 +26,7 @@ preproc.image <- function(im, mean.image) {
   arr <- as.array(resized) * 255
   dim(arr) <- c(224, 224, 3)
   # substract the mean
-  normed <- arr - mean.img
+  normed <- arr - 117
   # Reshape to format needed by mxnet (width, height, channel, num)
   dim(normed) <- c(224, 224, 3, 1)
   return(normed)
