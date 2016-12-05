@@ -6,7 +6,7 @@ require(png)
 
 if (!file.exists("synset.txt")) {
   download.file("http://data.dmlc.ml/mxnet/models/imagenet/inception-bn.tar.gz", destfile = "inception-bn.tar.gz")
-  untar("Inception.zip")
+  untar("inception-bn.tar.gz")
 }
 
 model <<- mx.model.load("./Inception-BN", iteration = 126)
